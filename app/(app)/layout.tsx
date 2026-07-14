@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/lib/useAuth";
+import { ROLE_LABELS } from "@/lib/types";
 import Avatar from "@/components/Avatar";
 import NotiBell from "@/components/noti/NotiBell";
 
@@ -74,7 +75,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <Avatar user={profile} size="md" />
                 <span className="text-sm">
                   <span className="block font-medium leading-tight">{profile.displayName}</span>
-                  <span className="block text-xs leading-tight text-slate-400">{profile.role}</span>
+                  <span className="block text-xs leading-tight text-slate-400">{ROLE_LABELS[profile.role] ?? profile.role}</span>
                 </span>
               </span>
             )}

@@ -13,7 +13,7 @@ service cloud.firestore {
       allow read: if signedIn();
       // สร้าง/แก้โปรไฟล์ตัวเองได้ แต่ห้ามตั้ง role เอง (ยกเว้นยังไม่มี user เลย = คนแรกเป็น admin ฝั่ง client จัดการ)
       allow create: if signedIn() && request.auth.uid == uid
-        && request.resource.data.role in ['admin', 'dev', 'tester'];
+        && request.resource.data.role in ['admin', 'dev', 'tester', 'pm', 'uxui', 'ba'];
       allow update: if signedIn() && (
         (request.auth.uid == uid && request.resource.data.role == resource.data.role)
         || isAdmin()
@@ -40,7 +40,7 @@ service cloud.firestore {
       allow create, update: if signedIn()
         && request.resource.data.title is string
         && request.resource.data.title.size() > 0
-        && request.resource.data.status in ['todo', 'doing', 'test', 'done'];
+        && request.resource.data.status in ['todo', 'doing', 'test', 'done', 'deploy'];
 
       match /comments/{commentId} {
         allow read: if signedIn();

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Sprint, Task, TaskStatus, UserDoc } from "@/lib/types";
-import { STATUS_LABELS, TASK_STATUSES } from "@/lib/types";
+import { ROLE_LABELS, STATUS_LABELS, TASK_STATUSES } from "@/lib/types";
 import {
   addComment,
   assignTask,
@@ -97,7 +97,7 @@ export default function TaskModal({ task, tasks, users, sprints, me, onClose }: 
               >
                 <option value="">— ยังไม่มี —</option>
                 {users.map((u) => (
-                  <option key={u.uid} value={u.uid}>{u.displayName} ({u.role})</option>
+                  <option key={u.uid} value={u.uid}>{u.displayName} ({ROLE_LABELS[u.role] ?? u.role})</option>
                 ))}
               </select>
             </label>

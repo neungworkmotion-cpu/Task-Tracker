@@ -11,6 +11,7 @@ const HEADER_COLORS: Record<TaskStatus, string> = {
   doing: "bg-sky-100 text-sky-700",
   test: "bg-amber-100 text-amber-700",
   done: "bg-emerald-100 text-emerald-700",
+  deploy: "bg-purple-100 text-purple-700",
 };
 
 interface Props {

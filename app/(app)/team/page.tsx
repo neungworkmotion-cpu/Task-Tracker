@@ -2,13 +2,16 @@
 
 import { useAuth } from "@/lib/useAuth";
 import { setUserRole, useUsers } from "@/lib/data";
-import type { Role } from "@/lib/types";
+import { ROLE_LABELS, type Role } from "@/lib/types";
 import Avatar from "@/components/Avatar";
 
-const ROLES: Role[] = ["admin", "dev", "tester"];
+const ROLES: Role[] = ["admin", "pm", "dev", "uxui", "ba", "tester"];
 const ROLE_BADGE: Record<Role, string> = {
   admin: "bg-purple-100 text-purple-700",
+  pm: "bg-rose-100 text-rose-700",
   dev: "bg-sky-100 text-sky-700",
+  uxui: "bg-pink-100 text-pink-700",
+  ba: "bg-teal-100 text-teal-700",
   tester: "bg-amber-100 text-amber-700",
 };
 
@@ -44,12 +47,12 @@ export default function TeamPage() {
                 className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
               >
                 {ROLES.map((r) => (
-                  <option key={r} value={r}>{r}</option>
+                  <option key={r} value={r}>{ROLE_LABELS[r]}</option>
                 ))}
               </select>
             ) : (
               <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${ROLE_BADGE[u.role]}`}>
-                {u.role}
+                {ROLE_LABELS[u.role] ?? u.role}
               </span>
             )}
           </li>

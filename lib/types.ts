@@ -1,7 +1,7 @@
 import type { Timestamp } from "firebase/firestore";
 
-export type Role = "admin" | "dev" | "tester";
-export type TaskStatus = "todo" | "doing" | "test" | "done";
+export type Role = "admin" | "dev" | "tester" | "pm" | "uxui" | "ba";
+export type TaskStatus = "todo" | "doing" | "test" | "done" | "deploy";
 export type SprintStatus = "planned" | "active" | "done";
 export type NotiType =
   | "moved_to_test"
@@ -10,12 +10,22 @@ export type NotiType =
   | "assigned"
   | "commented";
 
-export const TASK_STATUSES: TaskStatus[] = ["todo", "doing", "test", "done"];
+export const TASK_STATUSES: TaskStatus[] = ["todo", "doing", "test", "done", "deploy"];
 export const STATUS_LABELS: Record<TaskStatus, string> = {
   todo: "Todo",
   doing: "Doing",
   test: "Test",
-  done: "Done",
+  done: "Done - waiting deploy",
+  deploy: "Deploy",
+};
+
+export const ROLE_LABELS: Record<Role, string> = {
+  admin: "Admin",
+  dev: "Dev",
+  tester: "Tester",
+  pm: "Project Manager",
+  uxui: "UX/UI",
+  ba: "BA",
 };
 
 export interface UserDoc {
