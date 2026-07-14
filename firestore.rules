@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn();
+      // สร้าง/แก้โปรไฟล์ตัวเองได้ แต่ห้ามตั้ง role เอง (ยกเว้นยังไม่มี user เลย = คนแรกเป็น admin ฝั่ง client จัดการ)
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.role in ['admin', 'dev', 'tester'];
+      allow update: if signedIn() && (
+        (request.auth.uid == uid && request.resource.data.role == resource.data.role)
+        || isAdmin()
+      );
+    }
+
+    match /projects/{projectId} {
+      allow read, delete: if signedIn();
+      allow create, update: if signedIn()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0;
+    }
+
+    match /sprints/{sprintId} {
+      allow read, delete: if signedIn();
+      allow create, update: if signedIn()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.status in ['planned', 'active', 'done'];
+    }
+
+    match /tasks/{taskId} {
+      allow read, delete: if signedIn();
+      allow create, update: if signedIn()
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.status in ['todo', 'doing', 'test', 'done'];
+
+      match /comments/{commentId} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid;
+        allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
+      }
+    }
+
+    match /notifications/{notiId} {
+      // ใครก็สร้าง noti หาคนอื่นได้ (fan-out ฝั่ง client) แต่อ่าน/แก้ (mark read)/ลบ ได้เฉพาะของตัวเอง
+      allow create: if signedIn();
+      allow read, update, delete: if signedIn() && resource.data.toUid == request.auth.uid;
+    }
+  }
+}
