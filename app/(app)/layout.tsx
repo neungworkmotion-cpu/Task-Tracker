@@ -10,13 +10,29 @@ import Avatar from "@/components/Avatar";
 import NotiBell from "@/components/noti/NotiBell";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, profileError } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
   }, [loading, user, router]);
+
+  if (profileError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="max-w-md rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-800">
+          <p className="font-semibold">เชื่อมต่อ Firestore ไม่ได้</p>
+          <p className="mt-2">
+            ส่วนใหญ่เกิดจากยังไม่ได้ Publish Security Rules — ไปที่ Firebase Console →
+            Firestore Database → แท็บ Rules → วางเนื้อหาจากไฟล์ <code>firestore.rules</code> แล้วกด Publish
+            จากนั้น refresh หน้านี้
+          </p>
+          <p className="mt-2 break-all text-xs text-red-500">{profileError}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading || !user) {
     return (

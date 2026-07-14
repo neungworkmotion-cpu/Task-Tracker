@@ -26,12 +26,15 @@ interface AuthState {
   user: User | null;
   profile: UserDoc | null;
   loading: boolean;
+  /** error ตอนอ่าน/สร้างโปรไฟล์ (เช่น Firestore rules ยังไม่เปิด) */
+  profileError: string | null;
 }
 
 const AuthContext = createContext<AuthState>({
   user: null,
   profile: null,
   loading: true,
+  profileError: null,
 });
 
 async function upsertUserDoc(user: User) {
@@ -66,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserDoc | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
     let unsubProfile: (() => void) | undefined;
@@ -73,16 +77,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       unsubProfile?.();
       unsubProfile = undefined;
       setUser(u);
+      setProfileError(null);
       if (u) {
         try {
           await upsertUserDoc(u);
         } catch (e) {
           console.error("upsert user failed", e);
+          setProfileError(e instanceof Error ? e.message : String(e));
         }
-        unsubProfile = onSnapshot(doc(db, "users", u.uid), (snap) => {
-          setProfile(snap.exists() ? (snap.data() as UserDoc) : null);
-          setLoading(false);
-        });
+        unsubProfile = onSnapshot(
+          doc(db, "users", u.uid),
+          (snap) => {
+            setProfile(snap.exists() ? (snap.data() as UserDoc) : null);
+            setLoading(false);
+          },
+          (err) => {
+            console.error("profile snapshot failed", err);
+            setProfileError(err.message);
+            setLoading(false);
+          },
+        );
       } else {
         setProfile(null);
         setLoading(false);
@@ -95,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading }}>
+    <AuthContext.Provider value={{ user, profile, loading, profileError }}>
       {children}
     </AuthContext.Provider>
   );
