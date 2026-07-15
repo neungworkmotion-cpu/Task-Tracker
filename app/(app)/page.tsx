@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
-import { createProject, deleteProject, updateProject, useProjects } from "@/lib/data";
-import type { Project } from "@/lib/types";
+import { createProject, deleteProject, updateProject, useAllTasks, useProjects } from "@/lib/data";
+import { progressOf, type Project, type Task } from "@/lib/types";
+import ProgressBar from "@/components/ProgressBar";
 
 const COLORS = ["#6366f1", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#ec4899", "#8b5cf6"];
 
-function ProjectCard({ project }: { project: Project }) {
+function ProjectCard({ project, tasks }: { project: Project; tasks: Task[] }) {
+  const progress = progressOf(tasks);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(project.name);
 
@@ -19,7 +21,7 @@ function ProjectCard({ project }: { project: Project }) {
   }
 
   return (
-    <div className="group relative rounded-xl bg-white p-4 shadow-sm transition hover:shadow-md">
+    <div className="group relative rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm transition hover:shadow-md">
       <span
         className="absolute inset-x-0 top-0 h-1.5 rounded-t-xl"
         style={{ background: project.color }}
@@ -41,15 +43,18 @@ function ProjectCard({ project }: { project: Project }) {
           />
         </form>
       ) : (
-        <Link href={`/board/${project.id}`} className="mt-1 block">
+        <Link href={`/project/${project.id}`} className="mt-1 block">
           <h2 className="truncate font-semibold">{project.name}</h2>
-          <p className="mt-1 text-xs text-slate-400">เปิดบอร์ด →</p>
+          <p className="mt-1 text-xs text-slate-400">เปิดโปรเจกต์ →</p>
         </Link>
       )}
+      <div className="mt-3">
+        <ProgressBar {...progress} />
+      </div>
       <div className="absolute right-2 top-3 hidden gap-1 group-hover:flex">
         <button
           onClick={() => setEditing(true)}
-          className="rounded p-1 text-xs text-slate-400 hover:bg-slate-100"
+          className="rounded p-1 text-xs text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
           title="เปลี่ยนชื่อ"
         >
           ✏️
@@ -58,17 +63,17 @@ function ProjectCard({ project }: { project: Project }) {
           onClick={() => {
             if (confirm(`ลบโปรเจกต์ "${project.name}" พร้อมการ์ดทั้งหมด?`)) deleteProject(project.id);
           }}
-          className="rounded p-1 text-xs text-slate-400 hover:bg-red-50"
+          className="rounded p-1 text-xs text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/40"
           title="ลบ"
         >
           🗑️
         </button>
       </div>
-      <div className="mt-3 flex gap-2 text-xs text-slate-500">
-        <Link href={`/board/${project.id}`} className="rounded-lg bg-slate-100 px-2 py-1 hover:bg-indigo-50 hover:text-indigo-700">
-          Kanban
+      <div className="mt-2 flex gap-2 text-xs text-slate-500">
+        <Link href={`/project/${project.id}`} className="rounded-lg bg-slate-100 dark:bg-slate-800 px-2 py-1 hover:bg-indigo-50 dark:hover:bg-indigo-950 hover:text-indigo-700">
+          Modules
         </Link>
-        <Link href={`/sprints/${project.id}`} className="rounded-lg bg-slate-100 px-2 py-1 hover:bg-indigo-50 hover:text-indigo-700">
+        <Link href={`/sprints/${project.id}`} className="rounded-lg bg-slate-100 dark:bg-slate-800 px-2 py-1 hover:bg-indigo-50 dark:hover:bg-indigo-950 hover:text-indigo-700">
           Sprints
         </Link>
       </div>
@@ -79,6 +84,7 @@ function ProjectCard({ project }: { project: Project }) {
 export default function ProjectsPage() {
   const { user } = useAuth();
   const projects = useProjects();
+  const allTasks = useAllTasks();
   const [name, setName] = useState("");
   const [color, setColor] = useState(COLORS[0]);
 
@@ -93,7 +99,7 @@ export default function ProjectsPage() {
     <div className="mx-auto max-w-4xl">
       <h1 className="text-xl font-bold">โปรเจกต์</h1>
 
-      <form onSubmit={submit} className="mt-4 flex flex-wrap items-center gap-2 rounded-xl bg-white p-3 shadow-sm">
+      <form onSubmit={submit} className="mt-4 flex flex-wrap items-center gap-2 rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -130,7 +136,11 @@ export default function ProjectsPage() {
       ) : (
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((p) => (
-            <ProjectCard key={p.id} project={p} />
+            <ProjectCard
+              key={p.id}
+              project={p}
+              tasks={(allTasks ?? []).filter((t) => t.projectId === p.id)}
+            />
           ))}
         </div>
       )}

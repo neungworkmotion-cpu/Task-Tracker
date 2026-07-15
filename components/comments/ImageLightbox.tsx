@@ -16,7 +16,7 @@ export default function ImageLightbox({
       <img src={src} alt="รูปแนบ" className="max-h-full max-w-full rounded-lg object-contain" />
       <button
         onClick={onClose}
-        className="absolute right-4 top-4 rounded-full bg-white/20 px-3 py-1 text-white hover:bg-white/30"
+        className="absolute right-4 top-4 rounded-full bg-white dark:bg-slate-900/20 px-3 py-1 text-white hover:bg-white/30"
       >
         ✕
       </button>

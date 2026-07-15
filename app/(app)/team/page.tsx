@@ -26,7 +26,7 @@ export default function TeamPage() {
       <p className="mt-1 text-sm text-slate-500">
         สมาชิกทุกคนที่เคย login — {isAdmin ? "คุณเป็น admin เปลี่ยน role ได้" : "ให้ admin เป็นคนเปลี่ยน role"}
       </p>
-      <ul className="mt-4 divide-y divide-slate-100 rounded-xl bg-white shadow-sm">
+      <ul className="mt-4 divide-y divide-slate-100 rounded-xl bg-white dark:bg-slate-900 shadow-sm">
         {users === null && (
           <li className="px-4 py-8 text-center text-sm text-slate-400">กำลังโหลด…</li>
         )}

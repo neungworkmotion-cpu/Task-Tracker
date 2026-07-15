@@ -52,7 +52,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-lg">
+      <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-lg">
         <h1 className="text-2xl font-bold">Task Tracker</h1>
         <p className="mt-1 text-sm text-slate-500">
           {mode === "signin" ? "เข้าสู่ระบบเพื่อเริ่มใช้งาน" : "สมัครสมาชิกใหม่"}
@@ -61,7 +61,7 @@ export default function LoginPage() {
         <button
           onClick={() => run(() => signInWithPopup(auth, googleProvider))}
           disabled={busy}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 py-2.5 text-sm font-medium hover:bg-slate-50 disabled:opacity-50"
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 py-2.5 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
             <path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.3-2.2H12v4.1h6.5c-.1 1.1-.8 2.7-2.4 3.8l3.7 2.9c2.2-2 3.7-5 3.7-8.6z" />

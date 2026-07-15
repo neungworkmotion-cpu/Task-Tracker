@@ -10,7 +10,7 @@ const HEADER_COLORS: Record<TaskStatus, string> = {
   todo: "bg-slate-200 text-slate-700",
   doing: "bg-sky-100 text-sky-700",
   test: "bg-amber-100 text-amber-700",
-  done: "bg-emerald-100 text-emerald-700",
+  done: "bg-emerald-100 text-emerald-700 dark:text-emerald-300",
   deploy: "bg-purple-100 text-purple-700",
 };
 
@@ -37,7 +37,7 @@ export default function Column({ status, tasks, users, sprints, onOpen, onApprov
   }
 
   return (
-    <div className="flex w-72 shrink-0 snap-start flex-col rounded-2xl bg-slate-50 p-2 max-md:w-[85vw]">
+    <div className="flex h-full min-h-0 w-72 shrink-0 snap-start flex-col rounded-2xl bg-slate-50 dark:bg-slate-900/60 p-2 max-md:w-[85vw]">
       <div className="flex items-center gap-2 px-2 py-1.5">
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${HEADER_COLORS[status]}`}>
           {STATUS_LABELS[status]}
@@ -49,8 +49,8 @@ export default function Column({ status, tasks, users, sprints, onOpen, onApprov
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex min-h-24 flex-1 flex-col gap-2 rounded-xl p-1 transition ${
-              snapshot.isDraggingOver ? "bg-indigo-50" : ""
+            className={`flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto rounded-xl p-1 transition ${
+              snapshot.isDraggingOver ? "bg-indigo-50 dark:bg-indigo-950" : ""
             }`}
           >
             {tasks.map((t, i) => (
@@ -86,7 +86,7 @@ export default function Column({ status, tasks, users, sprints, onOpen, onApprov
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="m-1 rounded-lg py-1.5 text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          className="m-1 rounded-lg py-1.5 text-sm text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600"
         >
           + เพิ่มการ์ด
         </button>

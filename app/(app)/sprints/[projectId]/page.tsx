@@ -9,16 +9,18 @@ import {
   deleteSprint,
   setTaskSprint,
   updateSprint,
+  useModules,
   useProjects,
   useSprints,
   useTasks,
 } from "@/lib/data";
-import type { Sprint, Task } from "@/lib/types";
-import { STATUS_LABELS } from "@/lib/types";
+import type { Module, Sprint, Task } from "@/lib/types";
+import { progressOf, STATUS_LABELS } from "@/lib/types";
 
 const BACKLOG = "backlog";
 
-function TaskRow({ task, index, sprints }: { task: Task; index: number; sprints: Sprint[] }) {
+function TaskRow({ task, index, sprints, modules }: { task: Task; index: number; sprints: Sprint[]; modules: Module[] }) {
+  const mod = modules.find((m) => m.id === task.moduleId);
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
@@ -26,12 +28,17 @@ function TaskRow({ task, index, sprints }: { task: Task; index: number; sprints:
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={`flex items-center gap-2 rounded-lg border bg-white px-3 py-2 text-sm shadow-sm ${
-            snapshot.isDragging ? "ring-2 ring-indigo-300" : "border-slate-200"
+          className={`flex items-center gap-2 rounded-lg border bg-white dark:bg-slate-900 px-3 py-2 text-sm shadow-sm ${
+            snapshot.isDragging ? "ring-2 ring-indigo-300" : "border-slate-200 dark:border-slate-700"
           }`}
         >
           <span className="min-w-0 flex-1 truncate">{task.title}</span>
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">
+          {mod && (
+            <span className="rounded-full bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 text-[10px] text-indigo-600 max-md:hidden">
+              🧩 {mod.name}
+            </span>
+          )}
+          <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] text-slate-500">
             {STATUS_LABELS[task.status]}
           </span>
           {/* มือถือ: ย้ายผ่าน dropdown แทนการลาก */}
@@ -39,7 +46,7 @@ function TaskRow({ task, index, sprints }: { task: Task; index: number; sprints:
             value={task.sprintId ?? BACKLOG}
             onChange={(e) => setTaskSprint(task.id, e.target.value === BACKLOG ? null : e.target.value)}
             onClick={(e) => e.stopPropagation()}
-            className="rounded border border-slate-200 px-1 py-0.5 text-[10px] text-slate-500 md:hidden"
+            className="rounded border border-slate-200 dark:border-slate-700 px-1 py-0.5 text-[10px] text-slate-500 md:hidden"
           >
             <option value={BACKLOG}>Backlog</option>
             {sprints.map((s) => (
@@ -52,10 +59,11 @@ function TaskRow({ task, index, sprints }: { task: Task; index: number; sprints:
   );
 }
 
-function TaskDropList({ droppableId, tasks, sprints, empty }: {
+function TaskDropList({ droppableId, tasks, sprints, modules, empty }: {
   droppableId: string;
   tasks: Task[];
   sprints: Sprint[];
+  modules: Module[];
   empty: string;
 }) {
   return (
@@ -65,14 +73,14 @@ function TaskDropList({ droppableId, tasks, sprints, empty }: {
           ref={provided.innerRef}
           {...provided.droppableProps}
           className={`flex min-h-16 flex-col gap-1.5 rounded-xl p-1.5 transition ${
-            snapshot.isDraggingOver ? "bg-indigo-50" : ""
+            snapshot.isDraggingOver ? "bg-indigo-50 dark:bg-indigo-950" : ""
           }`}
         >
           {tasks.length === 0 && !snapshot.isDraggingOver && (
             <p className="py-3 text-center text-xs text-slate-300">{empty}</p>
           )}
           {tasks.map((t, i) => (
-            <TaskRow key={t.id} task={t} index={i} sprints={sprints} />
+            <TaskRow key={t.id} task={t} index={i} sprints={sprints} modules={modules} />
           ))}
           {provided.placeholder}
         </div>
@@ -86,6 +94,7 @@ export default function SprintsPage() {
   const projects = useProjects();
   const tasks = useTasks(projectId);
   const sprints = useSprints(projectId);
+  const modules = useModules(projectId);
   const project = projects?.find((p) => p.id === projectId);
 
   const [name, setName] = useState("");
@@ -121,13 +130,13 @@ export default function SprintsPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Link href={`/board/${projectId}`} className="text-sm text-slate-400 hover:text-slate-600">←</Link>
+        <Link href={`/project/${projectId}`} className="text-sm text-slate-400 hover:text-slate-600">←</Link>
         <h1 className="text-lg font-bold" style={{ color: project?.color }}>
           {project?.name ?? "…"} — Sprint planning
         </h1>
       </div>
 
-      <form onSubmit={submit} className="mb-4 flex flex-wrap items-end gap-2 rounded-xl bg-white p-3 shadow-sm">
+      <form onSubmit={submit} className="mb-4 flex flex-wrap items-end gap-2 rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm">
         <label className="min-w-40 flex-1 text-xs text-slate-500">
           ชื่อสปรินต์
           <input
@@ -156,40 +165,40 @@ export default function SprintsPage() {
         </button>
       </form>
 
-      {tasks === null || sprints === null ? (
+      {tasks === null || sprints === null || modules === null ? (
         <p className="mt-8 text-center text-sm text-slate-400">กำลังโหลด…</p>
       ) : (
         <DragDropContext onDragEnd={onDragEnd}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <section className="rounded-2xl bg-slate-50 p-3">
+            <section className="rounded-2xl bg-slate-50 dark:bg-slate-900/60 p-3">
               <h2 className="px-1 pb-2 text-sm font-semibold text-slate-600">
                 📥 Backlog <span className="font-normal text-slate-400">({bySprint.get(BACKLOG)!.length})</span>
               </h2>
               <p className="px-1 pb-2 text-xs text-slate-400 max-md:hidden">ลากการ์ดไปใส่สปรินต์ทางขวา</p>
-              <TaskDropList droppableId={BACKLOG} tasks={bySprint.get(BACKLOG)!} sprints={sprints} empty="ไม่มีงานค้างใน backlog" />
+              <TaskDropList droppableId={BACKLOG} tasks={bySprint.get(BACKLOG)!} sprints={sprints} modules={modules} empty="ไม่มีงานค้างใน backlog" />
             </section>
 
             <div className="space-y-4">
               {sprints.length === 0 && (
-                <p className="rounded-2xl bg-slate-50 p-6 text-center text-sm text-slate-400">
+                <p className="rounded-2xl bg-slate-50 dark:bg-slate-900/60 p-6 text-center text-sm text-slate-400">
                   ยังไม่มีสปรินต์ — สร้างด้านบนก่อน
                 </p>
               )}
               {sprints.map((s) => {
                 const inSprint = bySprint.get(s.id) ?? [];
-                const done = inSprint.filter((t) => t.status === "done").length;
+                const progress = progressOf(inSprint);
                 return (
-                  <section key={s.id} className={`rounded-2xl p-3 ${s.status === "active" ? "bg-indigo-50 ring-1 ring-indigo-200" : "bg-slate-50"}`}>
+                  <section key={s.id} className={`rounded-2xl p-3 ${s.status === "active" ? "bg-indigo-50 dark:bg-indigo-950 ring-1 ring-indigo-200" : "bg-slate-50 dark:bg-slate-900/60"}`}>
                     <div className="flex flex-wrap items-center gap-2 px-1 pb-2">
                       <h2 className="text-sm font-semibold text-slate-700">🏃 {s.name}</h2>
                       {s.status === "active" && (
                         <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-semibold text-white">ACTIVE</span>
                       )}
                       {s.status === "done" && (
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">DONE</span>
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">DONE</span>
                       )}
                       <span className="text-xs text-slate-400">
-                        {s.startDate} → {s.endDate} · {done}/{inSprint.length} เสร็จ
+                        {s.startDate} → {s.endDate} · {progress.done}/{progress.total} เสร็จ ({progress.pct}%)
                       </span>
                       <span className="ml-auto flex gap-1">
                         {s.status === "planned" && (
@@ -208,13 +217,13 @@ export default function SprintsPage() {
                           onClick={() => {
                             if (confirm(`ลบสปรินต์ "${s.name}"? (การ์ดจะกลับไป backlog)`)) deleteSprint(s.id, tasks);
                           }}
-                          className="rounded-lg px-2 py-1 text-[10px] text-slate-400 hover:bg-red-50 hover:text-red-600"
+                          className="rounded-lg px-2 py-1 text-[10px] text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
                         >
                           🗑️
                         </button>
                       </span>
                     </div>
-                    <TaskDropList droppableId={s.id} tasks={inSprint} sprints={sprints} empty="ลากการ์ดมาใส่สปรินต์นี้" />
+                    <TaskDropList droppableId={s.id} tasks={inSprint} sprints={sprints} modules={modules} empty="ลากการ์ดมาใส่สปรินต์นี้" />
                   </section>
                 );
               })}

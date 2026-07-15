@@ -19,8 +19,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full bg-slate-100 text-slate-900">
+    <html lang="th" className={`${geistSans.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        {/* ตั้งธีมก่อน paint กันจอกะพริบ */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.theme;if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`,
+          }}
+        />
+      </head>
+      <body className="min-h-full bg-slate-100 dark:bg-slate-800 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

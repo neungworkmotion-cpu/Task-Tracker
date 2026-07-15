@@ -17,6 +17,7 @@ import {
 import { db } from "./firebase";
 import type {
   Comment,
+  Module,
   Noti,
   NotiType,
   Project,
@@ -89,6 +90,21 @@ export function useTasks(projectId: string | null) {
   );
 }
 
+/** ทุกการ์ดทุกโปรเจกต์ — ใช้คำนวณ % บนหน้ารายการโปรเจกต์ */
+export function useAllTasks() {
+  return useCol<Task>("tasks", [], byOrder, []);
+}
+
+export function useModules(projectId: string | null) {
+  return useCol<Module>(
+    "modules",
+    [where("projectId", "==", projectId)],
+    (a, b) => a.order - b.order,
+    [projectId],
+    !!projectId,
+  );
+}
+
 export function useSprints(projectId: string | null) {
   return useCol<Sprint>(
     "sprints",
@@ -134,7 +150,7 @@ const NOTI_MESSAGES: Record<NotiType, (taskTitle: string, from: string) => strin
 async function notify(
   toUids: string[],
   type: NotiType,
-  task: Pick<Task, "id" | "projectId" | "title">,
+  task: Pick<Task, "id" | "projectId" | "title" | "moduleId">,
   from: UserDoc,
 ) {
   const targets = [...new Set(toUids)].filter((uid) => uid && uid !== from.uid);
@@ -146,6 +162,7 @@ async function notify(
       fromUid: from.uid,
       taskId: task.id,
       projectId: task.projectId,
+      moduleId: task.moduleId ?? null,
       taskTitle: task.title,
       type,
       message: NOTI_MESSAGES[type](task.title, from.displayName),
@@ -184,14 +201,16 @@ export async function updateProject(id: string, data: Partial<Pick<Project, "nam
 }
 
 export async function deleteProject(id: string) {
-  // ลบ tasks + sprints ของโปรเจกต์ด้วย
-  const [tasks, sprints] = await Promise.all([
+  // ลบ tasks + sprints + modules ของโปรเจกต์ด้วย
+  const [tasks, sprints, modules] = await Promise.all([
     getDocs(query(collection(db, "tasks"), where("projectId", "==", id))),
     getDocs(query(collection(db, "sprints"), where("projectId", "==", id))),
+    getDocs(query(collection(db, "modules"), where("projectId", "==", id))),
   ]);
   const batch = writeBatch(db);
   tasks.docs.forEach((d) => batch.delete(d.ref));
   sprints.docs.forEach((d) => batch.delete(d.ref));
+  modules.docs.forEach((d) => batch.delete(d.ref));
   batch.delete(doc(db, "projects", id));
   await batch.commit();
 }
@@ -205,6 +224,7 @@ export function nextOrder(tasks: Task[], status: TaskStatus): number {
 
 export async function createTask(
   projectId: string,
+  moduleId: string | null,
   title: string,
   status: TaskStatus,
   order: number,
@@ -212,6 +232,7 @@ export async function createTask(
 ) {
   await addDoc(collection(db, "tasks"), {
     projectId,
+    moduleId,
     title,
     description: "",
     status,
@@ -308,6 +329,35 @@ export async function addComment(
   if (kind === "comment" && task.assigneeUid) {
     await notify([task.assigneeUid], "commented", task, me);
   }
+}
+
+// ---------- modules ----------
+
+export async function createModule(projectId: string, name: string, order: number) {
+  await addDoc(collection(db, "modules"), {
+    projectId,
+    name,
+    order,
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function updateModule(id: string, data: Partial<Pick<Module, "name" | "order">>) {
+  await updateDoc(doc(db, "modules", id), data);
+}
+
+/** ลบ module — การ์ดข้างในย้ายไป bucket ทั่วไป (moduleId = null) */
+export async function deleteModule(id: string, tasks: Task[]) {
+  const batch = writeBatch(db);
+  tasks
+    .filter((t) => t.moduleId === id)
+    .forEach((t) => batch.update(doc(db, "tasks", t.id), { moduleId: null }));
+  batch.delete(doc(db, "modules", id));
+  await batch.commit();
+}
+
+export async function setTaskModule(taskId: string, moduleId: string | null) {
+  await updateTask(taskId, { moduleId });
 }
 
 // ---------- sprints ----------

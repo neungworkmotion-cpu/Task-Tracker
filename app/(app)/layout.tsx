@@ -9,6 +9,8 @@ import { useAuth } from "@/lib/useAuth";
 import { ROLE_LABELS } from "@/lib/types";
 import Avatar from "@/components/Avatar";
 import NotiBell from "@/components/noti/NotiBell";
+import ThemeToggle from "@/components/ThemeToggle";
+import CatWalk from "@/components/CatWalk";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, profileError } = useAuth();
@@ -22,7 +24,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (profileError) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="max-w-md rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-800">
+        <div className="max-w-md rounded-2xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 p-6 text-sm text-red-800 dark:text-red-200">
           <p className="font-semibold">เชื่อมต่อ Firestore ไม่ได้</p>
           <p className="mt-2">
             ส่วนใหญ่เกิดจากยังไม่ได้ Publish Security Rules — ไปที่ Firebase Console →
@@ -49,8 +51,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white">
+    <div className="flex h-dvh flex-col">
+      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:border-slate-800 dark:bg-slate-900">
+        <CatWalk />
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4">
           <Link href="/" className="mr-2 text-lg font-bold text-indigo-600">
             📋 Task Tracker
@@ -61,7 +64,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 key={n.href}
                 href={n.href}
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-                  n.active ? "bg-indigo-50 text-indigo-700" : "text-slate-600 hover:bg-slate-100"
+                  n.active
+                    ? "bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                    : "text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
                 }`}
               >
                 {n.label}
@@ -69,6 +74,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-1.5">
+            <ThemeToggle />
             <NotiBell />
             {profile && (
               <span className="hidden items-center gap-2 sm:flex">
@@ -81,14 +87,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             )}
             <button
               onClick={() => signOut(auth)}
-              className="ml-1 rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-100"
+              className="ml-1 rounded-lg px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
             >
               ออก
             </button>
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-7xl flex-1 p-4">{children}</main>
+      <main className="mx-auto w-full max-w-7xl min-h-0 flex-1 overflow-y-auto p-4">{children}</main>
     </div>
   );
 }

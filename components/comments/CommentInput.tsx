@@ -64,13 +64,13 @@ export default function CommentInput({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-2">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2">
       {images.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-2">
           {images.map((img, i) => (
             <span key={i} className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img} alt={`แนบ ${i + 1}`} className="h-16 w-16 rounded-lg border border-slate-200 object-cover" />
+              <img src={img} alt={`แนบ ${i + 1}`} className="h-16 w-16 rounded-lg border border-slate-200 dark:border-slate-700 object-cover" />
               <button
                 onClick={() => setImages(images.filter((_, j) => j !== i))}
                 className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-700 text-[10px] text-white"
@@ -96,7 +96,7 @@ export default function CommentInput({
       />
       {error && <p className="px-1 pb-1 text-xs text-red-600">{error}</p>}
       <div className="flex items-center justify-between">
-        <label className="cursor-pointer rounded-lg px-2 py-1 text-xs text-slate-500 hover:bg-slate-100">
+        <label className="cursor-pointer rounded-lg px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
           🖼️ แนบรูป
           <input type="file" accept="image/*" multiple hidden onChange={handleFile} />
         </label>

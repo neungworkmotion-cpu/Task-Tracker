@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Sprint, Task, TaskStatus, UserDoc } from "@/lib/types";
+import type { Module, Sprint, Task, TaskStatus, UserDoc } from "@/lib/types";
 import { ROLE_LABELS, STATUS_LABELS, TASK_STATUSES } from "@/lib/types";
 import {
   addComment,
@@ -9,6 +9,7 @@ import {
   deleteTask,
   moveTask,
   nextOrder,
+  setTaskModule,
   setTaskSprint,
   updateTask,
   useComments,
@@ -21,11 +22,12 @@ interface Props {
   tasks: Task[];
   users: UserDoc[];
   sprints: Sprint[];
+  modules?: Module[];
   me: UserDoc;
   onClose: () => void;
 }
 
-export default function TaskModal({ task, tasks, users, sprints, me, onClose }: Props) {
+export default function TaskModal({ task, tasks, users, sprints, modules = [], me, onClose }: Props) {
   // ผู้เรียกต้อง render ด้วย key={task.id} เพื่อ reset state ตอนสลับการ์ด
   const comments = useComments(task.id);
   const [title, setTitle] = useState(task.title);
@@ -51,29 +53,29 @@ export default function TaskModal({ task, tasks, users, sprints, me, onClose }: 
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl"
+        className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl bg-white dark:bg-slate-900 shadow-xl sm:rounded-2xl"
       >
-        <div className="flex items-start gap-2 border-b border-slate-100 p-4">
+        <div className="flex items-start gap-2 border-b border-slate-100 dark:border-slate-800 p-4">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={saveTitle}
             onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
-            className="min-w-0 flex-1 rounded-lg px-2 py-1 text-lg font-semibold outline-none hover:bg-slate-50 focus:bg-slate-50"
+            className="min-w-0 flex-1 rounded-lg px-2 py-1 text-lg font-semibold outline-none hover:bg-slate-50 dark:hover:bg-slate-800 focus:bg-slate-50"
           />
-          <button onClick={onClose} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100" aria-label="ปิด">
+          <button onClick={onClose} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="ปิด">
             ✕
           </button>
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
           {task.rejected && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+            <p className="rounded-lg bg-red-50 dark:bg-red-950/40 px-3 py-2 text-xs font-medium text-red-700 dark:text-red-300">
               ❌ งานนี้ถูก reject {task.rejectedCount > 1 ? `มาแล้ว ${task.rejectedCount} ครั้ง ` : ""}— ดูเหตุผลในคอมเมนต์ด้านล่าง
             </p>
           )}
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="text-xs text-slate-500">
               สถานะ
               <select
@@ -98,6 +100,19 @@ export default function TaskModal({ task, tasks, users, sprints, me, onClose }: 
                 <option value="">— ยังไม่มี —</option>
                 {users.map((u) => (
                   <option key={u.uid} value={u.uid}>{u.displayName} ({ROLE_LABELS[u.role] ?? u.role})</option>
+                ))}
+              </select>
+            </label>
+            <label className="text-xs text-slate-500">
+              Module
+              <select
+                value={task.moduleId ?? ""}
+                onChange={(e) => setTaskModule(task.id, e.target.value || null)}
+                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-900"
+              >
+                <option value="">📦 ทั่วไป</option>
+                {modules.map((m) => (
+                  <option key={m.id} value={m.id}>🧩 {m.name}</option>
                 ))}
               </select>
             </label>
@@ -136,7 +151,7 @@ export default function TaskModal({ task, tasks, users, sprints, me, onClose }: 
           </div>
         </div>
 
-        <div className="border-t border-slate-100 p-3">
+        <div className="border-t border-slate-100 dark:border-slate-800 p-3">
           <CommentInput onSubmit={(text, images) => addComment(task, text, images, me)} />
           <button
             onClick={() => {

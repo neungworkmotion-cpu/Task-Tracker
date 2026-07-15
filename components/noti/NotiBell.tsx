@@ -43,14 +43,14 @@ export default function NotiBell() {
   function openNoti(n: Noti) {
     if (!n.read) markNotiRead(n.id);
     setOpen(false);
-    router.push(`/board/${n.projectId}?task=${n.taskId}`);
+    router.push(`/board/${n.projectId}/${n.moduleId ?? "general"}?task=${n.taskId}`);
   }
 
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative rounded-lg p-2 hover:bg-slate-100"
+        className="relative rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
         aria-label="การแจ้งเตือน"
       >
         <span className="text-lg">🔔</span>
@@ -62,8 +62,8 @@ export default function NotiBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
+        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 py-2.5">
             <span className="text-sm font-semibold">การแจ้งเตือน</span>
             {unread > 0 && (
               <button
@@ -84,8 +84,8 @@ export default function NotiBell() {
               <li key={n.id}>
                 <button
                   onClick={() => openNoti(n)}
-                  className={`flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 ${
-                    n.read ? "opacity-60" : "bg-indigo-50/50"
+                  className={`flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 ${
+                    n.read ? "opacity-60" : "bg-indigo-50/50 dark:bg-indigo-950/50"
                   }`}
                 >
                   <span className="text-lg">{TYPE_ICONS[n.type]}</span>

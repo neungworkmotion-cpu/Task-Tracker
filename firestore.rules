@@ -27,6 +27,13 @@ service cloud.firestore {
         && request.resource.data.name.size() > 0;
     }
 
+    match /modules/{moduleId} {
+      allow read, delete: if signedIn();
+      allow create, update: if signedIn()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0;
+    }
+
     match /sprints/{sprintId} {
       allow read, delete: if signedIn();
       allow create, update: if signedIn()

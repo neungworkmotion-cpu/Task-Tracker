@@ -19,6 +19,13 @@ export const STATUS_LABELS: Record<TaskStatus, string> = {
   deploy: "Deploy",
 };
 
+/** ความคืบหน้า: เสร็จ = done (รอ deploy) หรือ deploy แล้ว */
+export function progressOf(tasks: { status: TaskStatus }[]) {
+  const total = tasks.length;
+  const done = tasks.filter((t) => t.status === "done" || t.status === "deploy").length;
+  return { done, total, pct: total ? Math.round((done / total) * 100) : 0 };
+}
+
 export const ROLE_LABELS: Record<Role, string> = {
   admin: "Admin",
   dev: "Dev",
@@ -45,6 +52,17 @@ export interface Project {
   createdAt: Timestamp | null;
 }
 
+export interface Module {
+  id: string;
+  projectId: string;
+  name: string;
+  order: number;
+  createdAt: Timestamp | null;
+}
+
+/** id เสมือนของ bucket "ทั่วไป" (การ์ดที่ไม่มี module) ใช้ใน URL */
+export const GENERAL_MODULE = "general";
+
 export interface Sprint {
   id: string;
   projectId: string;
@@ -65,6 +83,7 @@ export interface Task {
   rejectedCount: number;
   assigneeUid: string | null;
   sprintId: string | null;
+  moduleId?: string | null;
   order: number;
   createdBy: string;
   createdAt: Timestamp | null;
@@ -87,6 +106,7 @@ export interface Noti {
   fromUid: string;
   taskId: string;
   projectId: string;
+  moduleId?: string | null;
   taskTitle: string;
   type: NotiType;
   message: string;

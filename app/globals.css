@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* dark mode แบบ class (สลับด้วยปุ่ม ไม่ใช่ตามระบบอย่างเดียว) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --font-sans: var(--font-geist-sans);
 }
@@ -7,4 +10,63 @@
 html,
 body {
   height: 100%;
+}
+
+/* dark defaults ของ form controls ทุกตัว จะได้ไม่ต้องไล่แปะทีละจุด */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--color-slate-800);
+  color: var(--color-slate-100);
+  border-color: var(--color-slate-600);
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--color-slate-500);
+}
+
+/* แมวเดินบน appbar */
+.cat-walker {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  z-index: 10;
+  pointer-events: none;
+  animation: cat-x 45s linear infinite;
+}
+.cat-walker > span {
+  display: inline-block;
+  font-size: 18px;
+  animation: cat-bob 0.35s ease-in-out infinite alternate;
+}
+@keyframes cat-x {
+  0% {
+    left: -32px;
+    transform: scaleX(-1);
+  }
+  49.99% {
+    left: calc(100% + 8px);
+    transform: scaleX(-1);
+  }
+  50% {
+    left: calc(100% + 8px);
+    transform: scaleX(1);
+  }
+  100% {
+    left: -32px;
+    transform: scaleX(1);
+  }
+}
+@keyframes cat-bob {
+  from {
+    transform: translateY(0) rotate(-2deg);
+  }
+  to {
+    transform: translateY(-2px) rotate(2deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cat-walker {
+    display: none;
+  }
 }

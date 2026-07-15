@@ -40,7 +40,7 @@ export default function CommentList({
             <Avatar user={author} size="sm" />
             <div
               className={`min-w-0 flex-1 rounded-xl px-3 py-2 ${
-                isReject ? "border border-red-200 bg-red-50" : "bg-slate-100"
+                isReject ? "border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40" : "bg-slate-100 dark:bg-slate-800"
               }`}
             >
               <div className="flex items-baseline justify-between gap-2">
@@ -60,7 +60,7 @@ export default function CommentList({
                       src={img}
                       alt={`รูปแนบ ${i + 1}`}
                       onClick={() => setLightbox(img)}
-                      className="h-20 max-w-40 cursor-zoom-in rounded-lg border border-slate-200 object-cover"
+                      className="h-20 max-w-40 cursor-zoom-in rounded-lg border border-slate-200 dark:border-slate-700 object-cover"
                     />
                   ))}
                 </div>

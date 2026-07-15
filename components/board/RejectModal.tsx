@@ -12,7 +12,7 @@ interface Props {
 export default function RejectModal({ task, onConfirm, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-2xl bg-white p-4 shadow-xl">
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-xl">
         <h2 className="font-semibold">❌ Reject: {task.title}</h2>
         <p className="mt-1 text-xs text-slate-500">
           บอกเหตุผลว่าทำไมไม่ผ่าน (วางรูปแคปจอได้) — การ์ดจะเด้งกลับไป Todo และแจ้งเตือนคนทำ
@@ -29,7 +29,7 @@ export default function RejectModal({ task, onConfirm, onClose }: Props) {
             }}
           />
         </div>
-        <button onClick={onClose} className="mt-2 w-full rounded-lg py-1.5 text-xs text-slate-400 hover:bg-slate-50">
+        <button onClick={onClose} className="mt-2 w-full rounded-lg py-1.5 text-xs text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
           ยกเลิก
         </button>
       </div>

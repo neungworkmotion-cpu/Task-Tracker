@@ -26,18 +26,18 @@ export default function TaskCard({ task, index, users, sprints, onOpen, onApprov
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={() => onOpen(task)}
-          className={`cursor-pointer rounded-xl border bg-white p-3 shadow-sm transition hover:shadow-md ${
-            snapshot.isDragging ? "rotate-1 shadow-lg ring-2 ring-indigo-300" : "border-slate-200"
+          className={`cursor-pointer rounded-xl border bg-white dark:bg-slate-900 p-3 shadow-sm transition hover:shadow-md ${
+            snapshot.isDragging ? "rotate-1 shadow-lg ring-2 ring-indigo-300" : "border-slate-200 dark:border-slate-700"
           }`}
         >
           <div className="flex flex-wrap items-center gap-1.5">
             {task.rejected && (
-              <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+              <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700 dark:text-red-300">
                 ❌ rejected{task.rejectedCount > 1 ? ` ×${task.rejectedCount}` : ""}
               </span>
             )}
             {sprint && (
-              <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-600">
+              <span className="rounded-full bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 text-[10px] font-medium text-indigo-600">
                 🏃 {sprint.name}
               </span>
             )}
@@ -53,13 +53,13 @@ export default function TaskCard({ task, index, users, sprints, onOpen, onApprov
             <div className="mt-2 flex gap-1.5" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => onApprove(task)}
-                className="flex-1 rounded-lg bg-emerald-50 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+                className="flex-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100"
               >
                 ✅ Approve
               </button>
               <button
                 onClick={() => onReject(task)}
-                className="flex-1 rounded-lg bg-red-50 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
+                className="flex-1 rounded-lg bg-red-50 dark:bg-red-950/40 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100"
               >
                 ❌ Reject
               </button>
