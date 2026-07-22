@@ -19,6 +19,24 @@ export const STATUS_LABELS: Record<TaskStatus, string> = {
   deploy: "Deploy",
 };
 
+const TH_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+/** "12 ก.ค." จาก YYYY-MM-DD (คืน "" ถ้าพัง) */
+export function fmtDate(d?: string | null): string {
+  if (!d) return "";
+  const [, m, day] = d.split("-").map(Number);
+  if (!m || !day) return "";
+  return `${day} ${TH_MONTHS[m - 1]}`;
+}
+
+/** "12 ก.ค. → 20 ก.ค." หรือ "" ถ้าไม่มีวันเลย */
+export function fmtDateRange(start?: string | null, end?: string | null): string {
+  const s = fmtDate(start);
+  const e = fmtDate(end);
+  if (s && e) return `${s} → ${e}`;
+  return s || e;
+}
+
 /** ความคืบหน้า: เสร็จ = done (รอ deploy) หรือ deploy แล้ว */
 export function progressOf(tasks: { status: TaskStatus }[]) {
   const total = tasks.length;
@@ -73,6 +91,13 @@ export interface Sprint {
   createdAt: Timestamp | null;
 }
 
+export interface Attachment {
+  name: string;
+  type: string;
+  data: string; // base64 data URL
+  size: number;
+}
+
 export interface Task {
   id: string;
   projectId: string;
@@ -84,6 +109,9 @@ export interface Task {
   assigneeUid: string | null;
   sprintId: string | null;
   moduleId?: string | null;
+  startDate?: string | null; // YYYY-MM-DD
+  endDate?: string | null;
+  attachments?: Attachment[];
   order: number;
   createdBy: string;
   createdAt: Timestamp | null;

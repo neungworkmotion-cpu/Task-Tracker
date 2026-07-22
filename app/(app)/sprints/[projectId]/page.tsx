@@ -16,6 +16,7 @@ import {
 } from "@/lib/data";
 import type { Module, Sprint, Task } from "@/lib/types";
 import { progressOf, STATUS_LABELS } from "@/lib/types";
+import SprintTimeline from "@/components/sprints/SprintTimeline";
 
 const BACKLOG = "backlog";
 
@@ -100,6 +101,7 @@ export default function SprintsPage() {
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [view, setView] = useState<"planning" | "timeline">("planning");
 
   const bySprint = useMemo(() => {
     const map = new Map<string, Task[]>();
@@ -132,10 +134,28 @@ export default function SprintsPage() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Link href={`/project/${projectId}`} className="text-sm text-slate-400 hover:text-slate-600">←</Link>
         <h1 className="text-lg font-bold" style={{ color: project?.color }}>
-          {project?.name ?? "…"} — Sprint planning
+          {project?.name ?? "…"} — Sprint
         </h1>
+        <div className="ml-auto flex gap-1 rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5">
+          {(["planning", "timeline"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`rounded-md px-3 py-1 text-xs font-medium ${
+                view === v ? "bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white" : "text-slate-500"
+              }`}
+            >
+              {v === "planning" ? "📋 Planning" : "📅 Timeline"}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {view === "timeline" && tasks !== null && sprints !== null && (
+        <SprintTimeline sprints={sprints} />
+      )}
+
+      {view === "planning" && (
       <form onSubmit={submit} className="mb-4 flex flex-wrap items-end gap-2 rounded-xl bg-white dark:bg-slate-900 p-3 shadow-sm">
         <label className="min-w-40 flex-1 text-xs text-slate-500">
           ชื่อสปรินต์
@@ -164,8 +184,10 @@ export default function SprintsPage() {
           + สร้างสปรินต์
         </button>
       </form>
+      )}
 
-      {tasks === null || sprints === null || modules === null ? (
+      {view === "planning" && (
+      tasks === null || sprints === null || modules === null ? (
         <p className="mt-8 text-center text-sm text-slate-400">กำลังโหลด…</p>
       ) : (
         <DragDropContext onDragEnd={onDragEnd}>
@@ -230,7 +252,7 @@ export default function SprintsPage() {
             </div>
           </div>
         </DragDropContext>
-      )}
+      ))}
     </div>
   );
 }

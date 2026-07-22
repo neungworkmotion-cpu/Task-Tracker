@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type {
+  Attachment,
   Comment,
   Module,
   Noti,
@@ -225,22 +226,30 @@ export function nextOrder(tasks: Task[], status: TaskStatus): number {
 export async function createTask(
   projectId: string,
   moduleId: string | null,
-  title: string,
-  status: TaskStatus,
-  order: number,
   me: UserDoc,
+  opts: {
+    title: string;
+    status: TaskStatus;
+    order: number;
+    startDate?: string | null;
+    endDate?: string | null;
+    attachments?: Attachment[];
+  },
 ) {
   await addDoc(collection(db, "tasks"), {
     projectId,
     moduleId,
-    title,
+    title: opts.title,
     description: "",
-    status,
+    status: opts.status,
     rejected: false,
     rejectedCount: 0,
     assigneeUid: null,
     sprintId: null,
-    order,
+    startDate: opts.startDate ?? null,
+    endDate: opts.endDate ?? null,
+    attachments: opts.attachments ?? [],
+    order: opts.order,
     createdBy: me.uid,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),

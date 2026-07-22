@@ -1,7 +1,7 @@
 "use client";
 
 import { Draggable } from "@hello-pangea/dnd";
-import type { Sprint, Task, UserDoc } from "@/lib/types";
+import { fmtDateRange, type Sprint, type Task, type UserDoc } from "@/lib/types";
 import Avatar from "@/components/Avatar";
 
 interface Props {
@@ -43,9 +43,13 @@ export default function TaskCard({ task, index, users, sprints, onOpen, onApprov
             )}
           </div>
           <p className="mt-1 text-sm font-medium leading-snug">{task.title}</p>
+          {fmtDateRange(task.startDate, task.endDate) && (
+            <p className="mt-1 text-[11px] text-slate-400">📅 {fmtDateRange(task.startDate, task.endDate)}</p>
+          )}
           <div className="mt-2 flex items-center justify-between">
             <span className="text-xs text-slate-400">
               {task.commentCount > 0 && <>💬 {task.commentCount}</>}
+              {task.attachments && task.attachments.length > 0 && <> 📎 {task.attachments.length}</>}
             </span>
             <Avatar user={assignee} size="sm" />
           </div>

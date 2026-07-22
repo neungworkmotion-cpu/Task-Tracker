@@ -22,7 +22,9 @@ import { TASK_STATUSES } from "@/lib/types";
 import Column from "@/components/board/Column";
 import TaskModal from "@/components/board/TaskModal";
 import RejectModal from "@/components/board/RejectModal";
+import NewTaskModal from "@/components/board/NewTaskModal";
 import ProgressBar from "@/components/ProgressBar";
+import type { Attachment } from "@/lib/types";
 
 /** order ใหม่เมื่อวางที่ index ใน list ปลายทาง (list ไม่รวมการ์ดที่ลากอยู่) */
 function orderAt(dest: Task[], index: number): number {
@@ -50,6 +52,7 @@ function BoardContent() {
   const [sprintChoice, setSprintChoice] = useState<string | null>(null); // all | backlog | sprintId
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [rejecting, setRejecting] = useState<Task | null>(null);
+  const [adding, setAdding] = useState(false);
 
   const isGeneral = moduleId === GENERAL_MODULE;
   const project = projects?.find((p) => p.id === projectId);
@@ -106,16 +109,18 @@ function BoardContent() {
     await moveTask(task, status, orderAt(destList, destination.index), profile!, users ?? []);
   }
 
-  async function onCreate(status: TaskStatus, title: string) {
+  async function onCreate(data: {
+    title: string;
+    startDate: string | null;
+    endDate: string | null;
+    attachments: Attachment[];
+  }) {
     if (!moduleTasks) return;
-    await createTask(
-      projectId,
-      isGeneral ? null : moduleId,
-      title,
-      status,
-      nextOrder(moduleTasks, status),
-      profile!,
-    );
+    await createTask(projectId, isGeneral ? null : moduleId, profile!, {
+      ...data,
+      status: "todo",
+      order: nextOrder(moduleTasks, "todo"),
+    });
   }
 
   return (
@@ -173,7 +178,7 @@ function BoardContent() {
                 onOpen={setOpenTask}
                 onApprove={(t) => approveTask(t, profile!, moduleTasks)}
                 onReject={setRejecting}
-                onCreate={onCreate}
+                onRequestAdd={() => setAdding(true)}
               />
             ))}
           </div>
@@ -199,6 +204,7 @@ function BoardContent() {
           onClose={() => setRejecting(null)}
         />
       )}
+      {adding && <NewTaskModal onCreate={onCreate} onClose={() => setAdding(false)} />}
     </div>
   );
 }

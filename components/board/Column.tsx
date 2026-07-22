@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Droppable } from "@hello-pangea/dnd";
 import type { Sprint, Task, TaskStatus, UserDoc } from "@/lib/types";
 import { STATUS_LABELS } from "@/lib/types";
@@ -22,20 +21,10 @@ interface Props {
   onOpen: (task: Task) => void;
   onApprove: (task: Task) => void;
   onReject: (task: Task) => void;
-  onCreate: (status: TaskStatus, title: string) => Promise<void>;
+  onRequestAdd: () => void;
 }
 
-export default function Column({ status, tasks, users, sprints, onOpen, onApprove, onReject, onCreate }: Props) {
-  const [adding, setAdding] = useState(false);
-  const [title, setTitle] = useState("");
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) return;
-    await onCreate(status, title.trim());
-    setTitle("");
-  }
-
+export default function Column({ status, tasks, users, sprints, onOpen, onApprove, onReject, onRequestAdd }: Props) {
   return (
     <div className="flex h-full min-h-0 w-72 shrink-0 snap-start flex-col rounded-2xl bg-slate-50 dark:bg-slate-900/60 p-2 max-md:w-[85vw]">
       <div className="flex items-center gap-2 px-2 py-1.5">
@@ -69,23 +58,10 @@ export default function Column({ status, tasks, users, sprints, onOpen, onApprov
           </div>
         )}
       </Droppable>
-      {adding ? (
-        <form onSubmit={submit} className="p-1">
-          <input
-            autoFocus
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => {
-              if (!title.trim()) setAdding(false);
-            }}
-            onKeyDown={(e) => e.key === "Escape" && setAdding(false)}
-            placeholder="ชื่องาน แล้วกด Enter"
-            className="w-full rounded-lg border border-indigo-300 px-2.5 py-2 text-sm outline-none"
-          />
-        </form>
-      ) : (
+      {/* สร้างการ์ดได้เฉพาะคอลัมน์ Todo — คอลัมน์อื่นได้การ์ดจากการลากเท่านั้น */}
+      {status === "todo" && (
         <button
-          onClick={() => setAdding(true)}
+          onClick={onRequestAdd}
           className="m-1 rounded-lg py-1.5 text-sm text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600"
         >
           + เพิ่มการ์ด

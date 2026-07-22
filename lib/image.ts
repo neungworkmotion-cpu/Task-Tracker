@@ -2,8 +2,19 @@
 
 const MAX_DIM = 1280;
 const QUALITY = 0.7;
-// Firestore จำกัด 1MB/doc — กันที่ 700KB รวมต่อคอมเมนต์
+// Firestore จำกัด 1MB/doc — กันที่ 700KB รวมต่อคอมเมนต์/ต่อไฟล์แนบ
 export const MAX_COMMENT_IMAGE_BYTES = 700 * 1024;
+export const MAX_ATTACHMENT_BYTES = 700 * 1024;
+
+/** อ่านไฟล์ใดๆ เป็น base64 data URL (สำหรับไฟล์ที่ไม่ใช่รูป) */
+export function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
 
 /** ย่อรูปด้วย canvas แล้วคืน base64 data URL (JPEG) */
 export async function compressImage(file: File | Blob): Promise<string> {
