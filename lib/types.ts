@@ -141,3 +141,13 @@ export interface Noti {
   read: boolean;
   createdAt: Timestamp | null;
 }
+
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string;
+  authorUid: string;
+  createdAt: Timestamp | null;
+  updatedAt: Timestamp | null;
+}
