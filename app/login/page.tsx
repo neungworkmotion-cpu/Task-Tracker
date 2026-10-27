@@ -4,12 +4,27 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createUserWithEmailAndPassword,
+  getAdditionalUserInfo,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signOut,
   updateProfile,
+  type User,
 } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { useAuth } from "@/lib/useAuth";
+import { ALLOWED_EMAIL_HINT, isAllowedEmail } from "@/lib/allowedEmail";
+
+const NOT_ALLOWED_MESSAGE = `อนุญาตเฉพาะอีเมล ${ALLOWED_EMAIL_HINT} เท่านั้น`;
+
+async function sendVerificationAndSignOut(user: User) {
+  try {
+    await sendEmailVerification(user);
+  } finally {
+    await signOut(auth);
+  }
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,16 +35,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     if (!loading && user) router.replace("/");
   }, [loading, user, router]);
 
-  async function run(fn: () => Promise<unknown>) {
+  async function run(fn: () => Promise<string | void>) {
     setBusy(true);
     setError("");
+    setNotice("");
     try {
-      await fn();
+      const message = await fn();
+      if (message) {
+        setNotice(message);
+        return;
+      }
       router.replace("/");
     } catch (e) {
       setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง");
@@ -41,11 +62,29 @@ export default function LoginPage() {
   function submitEmail(e: React.FormEvent) {
     e.preventDefault();
     run(async () => {
+      if (!isAllowedEmail(email)) throw new Error(NOT_ALLOWED_MESSAGE);
       if (mode === "signup") {
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
         if (name.trim()) await updateProfile(cred.user, { displayName: name.trim() });
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        await sendVerificationAndSignOut(cred.user);
+        setMode("signin");
+        return `ส่งลิงก์ยืนยันไปที่ ${cred.user.email} แล้ว กดยืนยันในอีเมลก่อนแล้วค่อยเข้าสู่ระบบ`;
+      }
+      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+      if (!cred.user.emailVerified) {
+        await sendVerificationAndSignOut(cred.user);
+        return `อีเมลนี้ยังไม่ได้ยืนยัน ส่งลิงก์ยืนยันไปที่ ${cred.user.email} อีกครั้งแล้ว`;
+      }
+    });
+  }
+
+  function signInWithGoogle() {
+    run(async () => {
+      const cred = await signInWithPopup(auth, googleProvider);
+      if (!isAllowedEmail(cred.user.email)) {
+        if (getAdditionalUserInfo(cred)?.isNewUser) await cred.user.delete().catch(() => {});
+        await signOut(auth);
+        throw new Error(NOT_ALLOWED_MESSAGE);
       }
     });
   }
@@ -59,7 +98,7 @@ export default function LoginPage() {
         </p>
 
         <button
-          onClick={() => run(() => signInWithPopup(auth, googleProvider))}
+          onClick={signInWithGoogle}
           disabled={busy}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 py-2.5 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
         >
@@ -92,7 +131,7 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="อีเมล"
+            placeholder={ALLOWED_EMAIL_HINT}
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
           />
           <input
@@ -105,6 +144,7 @@ export default function LoginPage() {
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
           />
           {error && <p className="text-xs text-red-600">{error}</p>}
+          {notice && <p className="text-xs text-emerald-600">{notice}</p>}
           <button
             type="submit"
             disabled={busy}

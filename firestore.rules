@@ -2,7 +2,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() {
-      return request.auth != null;
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower().matches('^[^@]+[.]workmotion@gmail[.]com$');
     }
     function isAdmin() {
       return signedIn()
@@ -54,6 +56,25 @@ service cloud.firestore {
         allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid;
         allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
       }
+    }
+
+    match /notes/{noteId} {
+      function validNote() {
+        return request.resource.data.title is string
+          && request.resource.data.content is string
+          && request.resource.data.content.size() < 900000
+          && request.resource.data.authorUid == resource.data.authorUid;
+      }
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.content is string;
+      allow update: if signedIn()
+        && (resource.data.authorUid == request.auth.uid || isAdmin())
+        && validNote();
+      allow delete: if signedIn()
+        && (resource.data.authorUid == request.auth.uid || isAdmin());
     }
 
     match /notifications/{notiId} {

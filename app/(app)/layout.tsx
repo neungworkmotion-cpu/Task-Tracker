@@ -47,6 +47,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const nav = [
     { href: "/", label: "โปรเจกต์", active: pathname === "/" },
+    { href: "/notes", label: "โน้ต", active: pathname.startsWith("/notes") },
     { href: "/team", label: "ทีม", active: pathname === "/team" },
   ];
 

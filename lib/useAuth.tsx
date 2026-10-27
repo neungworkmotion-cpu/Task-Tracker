@@ -20,6 +20,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
+import { isAllowedUser } from "./allowedEmail";
 import type { UserDoc } from "./types";
 
 interface AuthState {
@@ -73,9 +74,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let unsubProfile: (() => void) | undefined;
-    const unsub = onAuthStateChanged(auth, async (u) => {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       unsubProfile?.();
       unsubProfile = undefined;
+      const u = firebaseUser && isAllowedUser(firebaseUser) ? firebaseUser : null;
       setUser(u);
       setProfileError(null);
       if (u) {

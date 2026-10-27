@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDocs,
   increment,
@@ -19,6 +20,7 @@ import type {
   Attachment,
   Comment,
   Module,
+  Note,
   Noti,
   NotiType,
   Project,
@@ -128,6 +130,32 @@ export function useComments(taskId: string | null) {
   );
 }
 
+export function useNotes() {
+  return useCol<Note>(
+    "notes",
+    [],
+    (a, b) =>
+      (b.updatedAt?.toMillis() ?? Date.now()) - (a.updatedAt?.toMillis() ?? Date.now()),
+    [],
+  );
+}
+
+export function useNote(noteId: string | null) {
+  const [state, setState] = useState<{ id: string; note: Note | null } | null>(null);
+
+  useEffect(() => {
+    if (!noteId) return;
+    return onSnapshot(
+      doc(db, "notes", noteId),
+      (snap) =>
+        setState({ id: noteId, note: snap.exists() ? ({ id: snap.id, ...snap.data() } as Note) : null }),
+      (err) => console.error(`snapshot notes/${noteId} failed`, err),
+    );
+  }, [noteId]);
+
+  return state?.id === noteId ? state : null;
+}
+
 export function useNotis(uid: string | null) {
   return useCol<Noti>(
     "notifications",
@@ -184,6 +212,31 @@ export async function markAllNotisRead(notis: Noti[]) {
   const batch = writeBatch(db);
   unread.forEach((n) => batch.update(doc(db, "notifications", n.id), { read: true }));
   await batch.commit();
+}
+
+// ---------- notes ----------
+
+export async function createNote(uid: string) {
+  const ref = await addDoc(collection(db, "notes"), {
+    title: "",
+    content: "",
+    excerpt: "",
+    authorUid: uid,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateNote(
+  id: string,
+  data: Partial<Pick<Note, "title" | "content" | "excerpt">>,
+) {
+  await updateDoc(doc(db, "notes", id), { ...data, updatedAt: serverTimestamp() });
+}
+
+export async function deleteNote(id: string) {
+  await deleteDoc(doc(db, "notes", id));
 }
 
 // ---------- projects ----------
